@@ -4,37 +4,35 @@ const Player = ({ player, onMouseDown, isSelected }) => {
   const { uid, id, team, role, x, y } = player;
 
   const isAttack = team === 'attack';
-  
-  // ShareMyTactics Style (Kit Colors)
-  // Attack = Red/White (Example) or User Blue, Defense = Yellow/Black
-  // Let's stick to the Classic Red vs Blue or similar distinct kit colors
-  
-  const bg = isAttack ? '#e31b23' : '#ffd700'; // Red vs Yellow
-  const text = isAttack ? '#fff' : '#000';
-  const border = isSelected ? '#000' : '#fff'; // Black selection for visibility
+
+  // Cyberpunk Style: Neon Blue vs Neon Magenta
+  const bg = isAttack ? '#0ea5e9' : '#d946ef'; // Cyan vs Magenta
+  const text = '#fff';
+  const border = isSelected ? '#fff' : 'rgba(255,255,255,0.5)';
+  const glow = isAttack ? '0 0 10px #0ea5e9' : '0 0 10px #d946ef';
 
   const style = {
     position: 'absolute',
     left: `${x}px`,
     top: `${y}px`,
-    width: '34px',
-    height: '34px',
-    backgroundColor: bg,
-    color: text,
-    borderRadius: '50%', // Keeping circle as it's cleaner than CSS t-shirt hacks
+    width: '36px',
+    height: '36px',
+    backgroundColor: 'rgba(2, 6, 23, 0.9)', // Dark background
+    color: bg, // Text color matches team color
+    borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    cursor: 'grab',
-    transform: `translate(-50%, -50%) scale(${isSelected ? 1.1 : 1})`,
+    cursor: 'pointer',
+    transform: `translate(-50%, -50%) scale(${isSelected ? 1.2 : 1})`,
     userSelect: 'none',
-    border: `2px solid ${border}`,
-    boxShadow: '0 2px 5px rgba(0,0,0,0.4)',
+    border: `2px solid ${bg}`, // Border is team color
+    boxShadow: isSelected ? `0 0 20px ${bg}, inset 0 0 10px ${bg}` : `0 0 5px ${bg}`,
     zIndex: isSelected ? 100 : 10,
     fontSize: '12px',
-    fontFamily: '"Open Sans", sans-serif',
-    fontWeight: '800',
-    transition: 'transform 0.1s ease'
+    fontFamily: '"Rajdhani", sans-serif',
+    fontWeight: '700',
+    transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
   };
 
   return (

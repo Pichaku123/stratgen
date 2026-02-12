@@ -5,30 +5,32 @@ const Pitch = () => {
     const width = 800;
     const height = 600;
 
-    // Grass Stripes Pattern
-    // ShareMyTactics Green (Brighter, classic tactical board look)
+    // Pro Max "Turf" Style - Deep Green with Tech Grid
     const grassStyle = {
         position: 'absolute',
         width: '100%',
         height: '100%',
-        backgroundColor: '#588f58', // Typical football pitch green
-        backgroundImage: `
-            linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px),
-            linear-gradient(to right, rgba(0,0,0,0.05) 50%, transparent 50%)
-        `,
-        backgroundSize: '100px 100px, 100px 100px, 50px 100%', 
-        border: 'none',
+        backgroundColor: '#22c55e', // Light Green
+        backgroundImage: `repeating-linear-gradient(
+            to right,
+            #22c55e,
+            #22c55e 50px,
+            #16a34a 50px,
+            #16a34a 100px
+        )`,
+        backgroundSize: '100%',
+        border: '3px solid rgba(255, 255, 255, 0.8)',
         boxSizing: 'border-box',
         overflow: 'hidden',
         pointerEvents: 'none',
-        boxShadow: 'inset 0 0 20px rgba(0,0,0,0.2)'
+        boxShadow: 'inset 0 0 80px rgba(0, 0, 0, 0.8)'
     };
 
     const lineStyle = {
         position: 'absolute',
-        border: '2px solid rgba(255, 255, 255, 0.9)',
-        boxShadow: '0 0 4px rgba(0,0,0,0.2)' // Subtle shadow for lines
+        border: '2px solid rgba(255, 255, 255, 0.9)', // Crisp White Lines
+        boxShadow: '0 0 10px rgba(255, 255, 255, 0.3)', // Slight bloom
+        opacity: 0.9
     };
 
     return (
@@ -70,7 +72,7 @@ const Pitch = () => {
                     height: '320px',
                     borderLeft: 'none',
                     transform: 'translateY(-50%)',
-                    backgroundColor: 'rgba(255,255,255,0.03)'
+                    backgroundColor: 'rgba(14, 165, 233, 0.05)'
                 }}
             />
             {/* Right */}
@@ -83,10 +85,10 @@ const Pitch = () => {
                     height: '320px',
                     borderRight: 'none',
                     transform: 'translateY(-50%)',
-                    backgroundColor: 'rgba(255,255,255,0.03)'
+                    backgroundColor: 'rgba(14, 165, 233, 0.05)'
                 }}
             />
-            
+
             {/* Corner Arcs */}
             <div style={{ ...lineStyle, top: '-20px', left: '-20px', width: '40px', height: '40px', borderRadius: '50%' }} />
             <div style={{ ...lineStyle, top: '-20px', right: '-20px', width: '40px', height: '40px', borderRadius: '50%' }} />

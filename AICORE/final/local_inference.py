@@ -49,7 +49,7 @@ def build_graph(freeze_frame, label=None):
 def get_user_freeze_frame():
     print("\nEnter player data. Type 'done' when finished.")
     print("Format: x,y,is_teammate (e.g., 100,40,True)")
-    
+
     user_freeze_frame = []
     player_count = 0
 
@@ -57,12 +57,12 @@ def get_user_freeze_frame():
         user_input = input(f"Player {player_count + 1} (x,y,is_teammate or 'done'): ").strip().lower()
         if user_input == 'done':
             break
-        
+
         try:
             parts = user_input.split(',')
             if len(parts) != 3:
                 raise ValueError("Incorrect format. Please use x,y,is_teammate.")
-            
+
             x = float(parts[0])
             y = float(parts[1])
             is_teammate = parts[2].lower() == 'true'
@@ -70,14 +70,14 @@ def get_user_freeze_frame():
             # Validate coordinates are within pitch dimensions (0-120, 0-80)
             if not (0 <= x <= 120 and 0 <= y <= 80):
                 print("Warning: Player coordinates are outside standard pitch dimensions (0-120x0-80).")
-                
+
             user_freeze_frame.append({"location": [x, y], "teammate": is_teammate})
             player_count += 1
         except ValueError as e:
             print(f"Invalid input: {e}. Please try again.")
         except Exception as e:
             print(f"An unexpected error occurred: {e}. Please try again.")
-            
+
     if not user_freeze_frame:
         print("No player data entered. Using a default sample freeze frame for demonstration.")
         return [

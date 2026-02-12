@@ -178,15 +178,13 @@ const TacticsBoard = () => {
     console.log(JSON.stringify(payload, null, 2));
     alert("Payload generated! Check Console (F12).");
 
-    // Temporarily disable API call as backend logic is changing
-    /*
     try {
       const response = await axios.post('http://localhost:8000/evaluate-formation', payload);
-      alert(`Formation Score: ${JSON.stringify(response.data)}`);
+      alert(`Formation Score: ${JSON.stringify(response.data.score)}`);
     } catch (error) {
       console.error("API Error", error);
+      alert("Error connecting to backend");
     }
-    */
   };
 
   return (

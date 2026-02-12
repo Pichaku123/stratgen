@@ -10,7 +10,7 @@ const Pitch = () => {
         position: 'absolute',
         width: '100%',
         height: '100%',
-        backgroundColor: '#22c55e', // Base Green
+        backgroundColor: '#4ade80', // Lighter Green Base
         backgroundImage: `
             linear-gradient(rgba(0,0,0,0.1) 2px, transparent 2px),
             linear-gradient(90deg, rgba(0,0,0,0.1) 2px, transparent 2px),

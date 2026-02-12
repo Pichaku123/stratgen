@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Pitch from './Pitch';
 import Player from './Player';
 import Ball from './Ball';
@@ -14,7 +15,7 @@ const createInitialPlayers = () => {
   const players = [];
   // Helper to create unique IDs
   const uid = () => Math.random().toString(36).substr(2, 9);
-  
+
   // Attackers (Blue) - 1-4-3-3 Formation approximation
   // GK
   players.push({ uid: uid(), id: 1, team: 'attack', role: 'GK', x: 50, y: 300 });
@@ -55,9 +56,10 @@ const createInitialPlayers = () => {
 const TacticsBoard = () => {
   const [players, setPlayers] = useState(createInitialPlayers());
   const [ball, setBall] = useState({ x: 400, y: 300 });
-  const [dragState, setDragState] = useState(null); 
+  const [dragState, setDragState] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [hasMoved, setHasMoved] = useState(false);
+  const [evaluationResult, setEvaluationResult] = useState(null);
   const boardRef = useRef(null);
 
   const handleMouseDown = (e, identifier, type) => {
@@ -65,7 +67,7 @@ const TacticsBoard = () => {
     // identifier is uid for player, or 'ball' for ball (or maybe ignored if type is ball)
     // Actually Ball passes 'ball' as ID.
     const entity = type === 'player' ? players.find(p => p.uid === identifier) : ball;
-    
+
     setDragState({
       id: identifier, // This is now UID for players
       type,
@@ -92,7 +94,7 @@ const TacticsBoard = () => {
     const newY = Math.max(0, Math.min(INITIAL_HEIGHT, dragState.initialY + dy));
 
     if (dragState.type === 'player') {
-      setPlayers(prev => prev.map(p => 
+      setPlayers(prev => prev.map(p =>
         p.uid === dragState.id ? { ...p, x: newX, y: newY } : p
       ));
     } else {
@@ -118,7 +120,7 @@ const TacticsBoard = () => {
   const updatePlayerAttribute = (key, value) => {
     if (!selectedPlayer) return;
     const updated = { ...selectedPlayer, [key]: value };
-    
+
     // Update proper number type for ID if needed
     if (key === 'id') updated.id = parseInt(value) || value;
 
@@ -137,22 +139,22 @@ const TacticsBoard = () => {
 
 
 
-// ... (rest of imports)
+  // ... (rest of imports)
 
-// ... (inside TacticsBoard component)
+  // ... (inside TacticsBoard component)
 
   const handleEvaluate = async () => {
     // Validate before sending
     if (attack > 11 || defense > 11) {
-       alert("Teams cannot have more than 11 players each!");
-       return;
+      alert("Teams cannot have more than 11 players each!");
+      return;
     }
 
     // Scale to Recquested Pitch Size (120x80)
     // Board is 800x600 (INITIAL_WIDTH x INITIAL_HEIGHT)
     const PITCH_LENGTH = 120;
     const PITCH_WIDTH = 80;
-    
+
     const scaleX = PITCH_LENGTH / INITIAL_WIDTH;
     const scaleY = PITCH_WIDTH / INITIAL_HEIGHT;
 
@@ -161,7 +163,7 @@ const TacticsBoard = () => {
       x: p.x * scaleX,
       y: p.y * scaleY
     }));
-    
+
     const scaledBall = {
       x: ball.x * scaleX,
       y: ball.y * scaleY
@@ -169,18 +171,34 @@ const TacticsBoard = () => {
 
     // Prepare modifications tracking (example: if selectedPlayer exists, assume it was just modified)
     const modifications = {
-        draggedNodes: selectedPlayer ? [`p_${selectedPlayer.uid}`] : []
+      draggedNodes: selectedPlayer ? [`p_${selectedPlayer.uid}`] : []
     };
 
     const payload = generateBackendPayload(scaledPlayers, scaledBall, modifications);
-    
+
     console.log("%c Generated Payload ", "background: #222; color: #bada55; font-size:14px; padding:4px;");
     console.log(JSON.stringify(payload, null, 2));
     alert("Payload generated! Check Console (F12).");
 
+    // API Call restored
     try {
       const response = await axios.post('http://localhost:8000/evaluate-formation', payload);
-      alert(`Formation Score: ${JSON.stringify(response.data.score)}`);
+      const prob = response.data.score;
+      const percent = (prob * 100).toFixed(2);
+
+      let interpretation = "Uncertain";
+      if (prob > 0.6) interpretation = "High chance of a SHOT";
+      else if (prob > 0.4) interpretation = "Likely a PASS / Build-up";
+      else interpretation = "Low scoring opportunity";
+
+      // Set state for modal instead of alert
+      setEvaluationResult({
+        message: response.data.message,
+        prediction: interpretation,
+        probability: prob.toFixed(4),
+        percent: percent
+      });
+
     } catch (error) {
       console.error("API Error", error);
       alert("Error connecting to backend");
@@ -190,10 +208,10 @@ const TacticsBoard = () => {
   return (
     <div className="layout-wrapper">
       <h1 className="app-title">StratGen</h1>
-      
+
       <div className="tactics-container">
-        
-        <div 
+
+        <div
           ref={boardRef}
           className="board"
           style={{
@@ -209,10 +227,10 @@ const TacticsBoard = () => {
         >
           <Pitch />
           {players.map(p => (
-            <Player 
-              key={p.uid} 
-              player={p} 
-              onMouseDown={handleMouseDown} 
+            <Player
+              key={p.uid}
+              player={p}
+              onMouseDown={handleMouseDown}
               isSelected={selectedPlayer && selectedPlayer.uid === p.uid}
             />
           ))}
@@ -223,19 +241,19 @@ const TacticsBoard = () => {
           <button onClick={handleEvaluate} style={{ marginBottom: '24px' }}>
             Evaluate Formation
           </button>
-          
+
           <div className="stats-panel">
             <div className="stat-item">
-               <div className="stat-label">Attackers</div>
-               <div className="stat-value" style={{ color: attack > 11 ? '#ef4444' : '#60a5fa' }}>
-                 {attack}
-               </div>
+              <div className="stat-label">Attackers</div>
+              <div className="stat-value" style={{ color: attack > 11 ? '#ef4444' : '#60a5fa' }}>
+                {attack}
+              </div>
             </div>
             <div className="stat-item">
-               <div className="stat-label">Defenders</div>
-               <div className="stat-value" style={{ color: defense > 11 ? '#ef4444' : '#facc15' }}>
-                 {defense}
-               </div>
+              <div className="stat-label">Defenders</div>
+              <div className="stat-value" style={{ color: defense > 11 ? '#ef4444' : '#facc15' }}>
+                {defense}
+              </div>
             </div>
           </div>
 
@@ -246,18 +264,18 @@ const TacticsBoard = () => {
               <h3>Edit Player</h3>
               <div className="form-group">
                 <label>Jersey Number</label>
-                <input 
-                  type="number" 
-                  value={selectedPlayer.id} 
+                <input
+                  type="number"
+                  value={selectedPlayer.id}
                   onChange={(e) => updatePlayerAttribute('id', e.target.value)}
                   placeholder="e.g. 10"
                 />
               </div>
               <div className="form-group">
                 <label>Role / Position</label>
-                <input 
-                  type="text" 
-                  value={selectedPlayer.role} 
+                <input
+                  type="text"
+                  value={selectedPlayer.role}
                   onChange={(e) => updatePlayerAttribute('role', e.target.value)}
                   placeholder="e.g. ST"
                 />
@@ -274,6 +292,26 @@ const TacticsBoard = () => {
         </div>
 
       </div>
+      {/* Evaluation Modal - Using Portal to ensure centering */}
+      {evaluationResult && createPortal(
+        <div className="modal-overlay" onClick={() => setEvaluationResult(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">Evaluation Result</div>
+            <div className="modal-body">
+              <div className="prediction-text">{evaluationResult.prediction}</div>
+              <div className="probability-score">{evaluationResult.percent}%</div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                Probability: {evaluationResult.probability}
+              </div>
+            </div>
+            <button className="modal-close-btn" onClick={() => setEvaluationResult(null)}>
+              Close
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
+
     </div>
   );
 };

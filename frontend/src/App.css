@@ -143,3 +143,95 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  /* Ensures full coverage more robustly than top/left/width/height */
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  /* Ensure it's on top of everything */
+  backdrop-filter: blur(5px);
+  margin: 0;
+  padding: 0;
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 0 50px rgba(0, 255, 136, 0.2);
+  text-align: center;
+  position: relative;
+  animation: modalPop 0.3s ease-out;
+}
+
+@keyframes modalPop {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: white;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 1rem;
+}
+
+.modal-body {
+  margin-bottom: 2rem;
+}
+
+.prediction-text {
+  font-size: 1.2rem;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.probability-score {
+  font-size: 4rem;
+  font-weight: 800;
+  color: var(--accent-green);
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+  margin: 0.5rem 0;
+  line-height: 1;
+}
+
+.modal-close-btn {
+  background-color: var(--accent-green);
+  color: var(--bg-primary);
+  border: none;
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.2s;
+}
+
+.modal-close-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+}

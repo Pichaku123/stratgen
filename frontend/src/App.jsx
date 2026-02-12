@@ -5,7 +5,8 @@ import './App.css'
 function App() {
   return (
     <>
-      <div className="card">
+      <div className="card glass-panel">
+        <h1>StratGen Tactics</h1>
         <TacticsBoard />
       </div>
     </>

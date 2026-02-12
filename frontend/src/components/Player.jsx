@@ -5,11 +5,11 @@ const Player = ({ player, onMouseDown, isSelected }) => {
 
   const isAttack = team === 'attack';
 
-  // Cyberpunk Style: Neon Blue vs Neon Magenta
-  const bg = isAttack ? '#0ea5e9' : '#d946ef'; // Cyan vs Magenta
+  // Pro Style: Blue vs Red
+  const bg = isAttack ? '#3b82f6' : '#ef4444'; // Blue vs Red
   const text = '#fff';
-  const border = isSelected ? '#fff' : 'rgba(255,255,255,0.5)';
-  const glow = isAttack ? '0 0 10px #0ea5e9' : '0 0 10px #d946ef';
+  const border = isSelected ? '#fff' : 'rgba(255,255,255,0.8)';
+  const glow = isAttack ? '0 0 10px #3b82f6' : '0 0 10px #ef4444';
 
   const style = {
     position: 'absolute',

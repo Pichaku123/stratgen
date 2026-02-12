@@ -10,15 +10,33 @@ const Pitch = () => {
         position: 'absolute',
         width: '100%',
         height: '100%',
-        backgroundColor: '#22c55e', // Light Green
-        backgroundImage: `repeating-linear-gradient(
-            to right,
-            #22c55e,
-            #22c55e 50px,
-            #16a34a 50px,
-            #16a34a 100px
-        )`,
-        backgroundSize: '100%',
+        backgroundColor: '#22c55e', // Base Green
+        backgroundImage: `
+            linear-gradient(rgba(0,0,0,0.1) 2px, transparent 2px),
+            linear-gradient(90deg, rgba(0,0,0,0.1) 2px, transparent 2px),
+            linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px),
+            conic-gradient(from 90deg at 2px 2px, #0000 90deg, #15803d 0)
+        `,
+        backgroundSize: '100px 100px, 100px 100px, 20px 20px, 20px 20px, 100px 100px',
+        // Creating a "Mowed" look with alternating stripes overlay
+        background: `
+            repeating-linear-gradient(
+                90deg,
+                #4ade80,
+                #4ade80 50px,
+                #22c55e 50px,
+                #22c55e 100px
+            ),
+            repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 50px,
+                rgba(0,0,0,0.05) 50px,
+                rgba(0,0,0,0.05) 100px
+            )
+        `,
+        backgroundBlendMode: 'multiply',
         border: '3px solid rgba(255, 255, 255, 0.8)',
         boxSizing: 'border-box',
         overflow: 'hidden',

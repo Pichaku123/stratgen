@@ -60,6 +60,7 @@ const TacticsBoard = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [hasMoved, setHasMoved] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState(null);
+  const [ghostPlayers, setGhostPlayers] = useState([]);
   const boardRef = useRef(null);
 
   const handleMouseDown = (e, identifier, type) => {
@@ -199,6 +200,24 @@ const TacticsBoard = () => {
         percent: percent
       });
 
+      console.log("API Response:", response.data);
+      // Process Ghost Players (Optimal Attacker Positions)
+      if (response.data.optimal_placements) {
+        const optimal = response.data.optimal_placements.map((pos, index) => ({
+          uid: `ghost_${index}`,
+          id: `G${index}`,
+          originalId: pos.id, // Capture original ID for arrow mapping
+          team: 'ghost', // Special team for styling
+          role: 'Op',
+          x: pos.x / scaleX, // Scale back to board dimensions
+          y: pos.y / scaleY
+        }));
+        console.log("Calculated Ghosts:", optimal);
+        setGhostPlayers(optimal);
+      } else {
+        setGhostPlayers([]);
+      }
+
     } catch (error) {
       console.error("API Error", error);
       alert("Error connecting to backend");
@@ -207,7 +226,6 @@ const TacticsBoard = () => {
 
   return (
     <div className="layout-wrapper">
-      <h1 className="app-title">StratGen</h1>
 
       <div className="tactics-container">
 
@@ -226,6 +244,65 @@ const TacticsBoard = () => {
           onMouseLeave={() => setDragState(null)}
         >
           <Pitch />
+
+          {/* Arrows Connecting Players to Ghosts */}
+          <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}>
+            <defs>
+              <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#00cc6a" opacity="0.8" />
+              </marker>
+            </defs>
+            {ghostPlayers.map(ghost => {
+              if (!ghost.originalId) return null;
+              // Robust ID matching: handle 'p_' prefix and string/number types
+              const originalUid = ghost.originalId.replace('p_', '');
+              const original = players.find(p => String(p.uid) === originalUid);
+
+              if (!original) return null;
+
+              return (
+                <line
+                  key={`arrow_${ghost.uid}`}
+                  x1={original.x}
+                  y1={original.y}
+                  x2={ghost.x}
+                  y2={ghost.y}
+                  stroke="#00cc6a"
+                  strokeWidth="2"
+                  strokeDasharray="5,5"
+                  opacity="0.6"
+                  markerEnd="url(#arrowhead)"
+                />
+              );
+            })}
+          </svg>
+
+          {ghostPlayers.map(p => (
+            <div
+              key={p.uid}
+              className="player ghost"
+              style={{
+                position: 'absolute',
+                left: p.x,
+                top: p.y,
+                transform: 'translate(-50%, -50%)',
+                pointerEvents: 'none',
+                opacity: 0.8, // Overall opacity
+                zIndex: 1,
+                width: '34px',
+                height: '34px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(227, 27, 35, 0.5)', // Faded Red (Attacker Color)
+                border: '2px solid rgba(255, 255, 255, 0.6)', // Faded White Border
+                boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+              }}
+            >
+              <span className="player-role" style={{ fontSize: '10px', color: 'white', fontWeight: 'bold' }}>{p.role}</span>
+            </div>
+          ))}
           {players.map(p => (
             <Player
               key={p.uid}
@@ -245,13 +322,13 @@ const TacticsBoard = () => {
           <div className="stats-panel">
             <div className="stat-item">
               <div className="stat-label">Attackers</div>
-              <div className="stat-value" style={{ color: attack > 11 ? '#ef4444' : '#60a5fa' }}>
+              <div className="stat-value" style={{ color: '#ef4444' }}>
                 {attack}
               </div>
             </div>
             <div className="stat-item">
               <div className="stat-label">Defenders</div>
-              <div className="stat-value" style={{ color: defense > 11 ? '#ef4444' : '#facc15' }}>
+              <div className="stat-value" style={{ color: '#facc15' }}>
                 {defense}
               </div>
             </div>

@@ -169,10 +169,10 @@ def evaluate_formation(payload: FormationPayload):
     # 3. Run Inference
     try:
         with torch.no_grad():
-            logits = model(data)
-            # Apply Sigmoid to get probability (0-1)
-            score = torch.sigmoid(logits).item()
-            print(f"Model Prediction (Logit: {logits.item():.2f}): {score:.4f}")
+            # Model now applies Sigmoid internally, so output is already probability (0-1)
+            probability = model(data)
+            score = probability.item()
+            print(f"Model Prediction (Probability): {score:.4f}")
             
         return {
             "score": score,

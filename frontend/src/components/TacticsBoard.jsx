@@ -179,7 +179,6 @@ const TacticsBoard = () => {
 
     console.log("%c Generated Payload ", "background: #222; color: #bada55; font-size:14px; padding:4px;");
     console.log(JSON.stringify(payload, null, 2));
-    alert("Payload generated! Check Console (F12).");
 
     // API Call restored
     try {

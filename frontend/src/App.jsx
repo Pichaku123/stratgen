@@ -1,21 +1,22 @@
-import React from 'react'
-import TacticsBoard from './components/TacticsBoard'
+import React, { useState } from 'react'
+import Dashboard from './components/Dashboard'
+import LandingPage from './components/LandingPage'
 import './App.css'
 
 function App() {
+  const [view, setView] = useState('landing');
+
+  const enterApp = () => {
+    setView('dashboard');
+  };
+
   return (
     <>
-      <header className="top-bar">
-        <div className="contact-info">
-          <span>📞 Contact: +91 8882493607</span>
-          <span className="separator">|</span>
-          <span>✉️ contact@stratgen.com</span>
-        </div>
-      </header>
-      <div className="card glass-panel">
-        <h1 className="app-title">StratGen</h1>
-        <TacticsBoard />
-      </div>
+      {view === 'landing' ? (
+        <LandingPage onEnter={enterApp} />
+      ) : (
+        <Dashboard />
+      )}
     </>
   )
 }

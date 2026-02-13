@@ -6,7 +6,9 @@ import torch
 import torch.nn.functional as F
 from torch_geometric.data import Data
 from gnn_model import GNNModel
+from cvae_inference import CVAE, generate_optimal_attacker_positions, attacker_dim, defender_dim
 import itertools
+import os # Ensure os is imported for path handling
 
 app = FastAPI()
 
@@ -42,6 +44,24 @@ except Exception as e:
     except Exception as e2:
         print(f"❌ Critical Error loading model: {e2}")
         model = None
+
+# --- Load CVAE Model ---
+CVAE_MODEL_PATH = "cvae_model.pth"
+try:
+    cvae_model = CVAE(attacker_dim, defender_dim)
+    # Load weights (map to CPU)
+    # Using weights_only=True for safety as per new Pytorch defaults, matching cvae_inference.py
+    if os.path.exists(CVAE_MODEL_PATH):
+        cvae_state = torch.load(CVAE_MODEL_PATH, map_location=torch.device('cpu'), weights_only=True)
+        cvae_model.load_state_dict(cvae_state)
+        cvae_model.eval()
+        print("✅ CVAE Model Loaded Successfully")
+    else:
+        print(f"⚠️ CVAE model file not found at {CVAE_MODEL_PATH}")
+        cvae_model = None
+except Exception as e:
+    print(f"❌ Error loading CVAE model: {e}")
+    cvae_model = None
 
 # --- Pydantic Models (based on frontend payload) ---
 
@@ -174,12 +194,6 @@ def evaluate_formation(payload: FormationPayload):
             score = probability.item()
             print(f"Model Prediction (Probability): {score:.4f}")
             
-        return {
-            "score": score,
-            "message": "Evaluation successful (Real Model 4-Feat)",
-            "details": f"Processed {num_nodes} nodes."
-        }
-        
     except Exception as e:
         print(f"Inference Error: {e}")
         return {
@@ -187,6 +201,69 @@ def evaluate_formation(payload: FormationPayload):
             "message": "Inference Error",
             "details": str(e)
         }
+    
+    # 4. Run CVAE Inference (Target Functionality)
+    optimal_placements = []
+    if cvae_model:
+        try:
+             # Prepare data list for CVAE: needs [{'x':, 'y':, 'is_attacker':, 'distance_to_goal':}]
+             # We already calculated normalized features, but cvae_inference expects raw-ish dictionaries 
+             # (actually it processes them again in process_player_data_for_cvae).
+             # Let's reconstruct the list expected by generate_optimal_attacker_positions
+             
+             cvae_input_data = []
+             for node in payload.graph_nodes:
+                 # Check if we need to pass normalized or raw. 
+                 # cvae_inference.process_player_data_for_cvae does: x / pitch_width. 
+                 # So we should pass RAW coordinates.
+                 
+                 is_attacker = (node.type == "attacker")
+                 
+                 # Calculate raw distance for consistency (though inference might recalculate or not use it directly if not in tensor)
+                 # Inspecting process_player_data_for_cvae in cvae_inference.py:
+                 # It reads 'x', 'y', 'is_attacker'. It does NOT seem to read 'distance_to_goal' explicitly 
+                 # for the tensor construction (it calculates it? No, looking at file content step 602...)
+                 # user's cvae_inference.py loop (lines 79-92) ONLY uses x, y, is_attacker.
+                 # So drag distance is irrelevant for the CVAE tensor construction defined there.
+                 
+                 cvae_input_data.append({
+                     'x': node.position.x,
+                     'y': node.position.y,
+                     'is_attacker': is_attacker,
+                     'distance_to_goal': 0 # Placeholder, not used by current CVAE processor
+                 })
+             
+             raw_placements = generate_optimal_attacker_positions(cvae_input_data, cvae_model)
+             print(f"DEBUG: Raw placements from CVAE: {raw_placements}")
+             
+             # Extract IDs of attackers to map back to response
+             attacker_ids = [node.id for node in payload.graph_nodes if node.type == "attacker"]
+             print(f"DEBUG: Found {len(attacker_ids)} attackers in payload: {attacker_ids}")
+
+             # Convert numpy types/lists to Python dicts with IDs
+             optimal_placements = []
+             # Safely zip; if model output count differs (shouldn't if logic holds), we truncate
+             for pid, p in zip(attacker_ids, raw_placements):
+                 print(f"DEBUG: Mapping {pid} to {p}")
+                 optimal_placements.append({
+                     'id': pid, # The ID sent from frontend (e.g. "p_123")
+                     'x': float(p['x']),
+                     'y': float(p['y'])
+                 })
+             print(f"Generated {len(optimal_placements)} optimal ghost positions mapped to players.")
+             
+        except Exception as e:
+             print(f"CVAE Inference Error: {e}")
+             # proper error handling: don't crash main response
+             
+    return {
+        "score": score,
+        "optimal_placements": optimal_placements,
+        "message": "Evaluation successful",
+        "details": f"Processed {num_nodes} nodes. Generated {len(optimal_placements)} ghost hints."
+    }
+        
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

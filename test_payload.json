@@ -1,0 +1,38 @@
+{
+    "metadata": {
+        "session_id": "test",
+        "pitch_length": 120,
+        "pitch_width": 80,
+        "set_piece_type": "open_play",
+        "attacking_team_id": 1
+    },
+    "tactical_context": {
+        "formation": "4-4-2",
+        "possession_phase": "attack"
+    },
+    "graph_nodes": [
+        {
+            "id": "p1",
+            "type": "attacker",
+            "is_actor": true,
+            "position": {
+                "x": 100,
+                "y": 40
+            },
+            "features": {}
+        },
+        {
+            "id": "p2",
+            "type": "defender",
+            "is_actor": false,
+            "position": {
+                "x": 105,
+                "y": 38
+            },
+            "features": {}
+        }
+    ],
+    "user_modifications": {
+        "dragged_nodes": []
+    }
+}
